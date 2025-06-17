@@ -1,42 +1,45 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'USERNAME', defaultValue: 'guest', description: 'Enter your username')
+        choice(name: 'ENV', choices: ['dev', 'staging', 'prod'], description: 'Choose the deployment environment')
+        booleanParam(name: 'RUN_TESTS', defaultValue: true, description: 'Run tests before deploy?')
+    }
+
     stages {
-        stage('Checkout') {
+        stage('Print Parameters') {
             steps {
-                echo 'Checking out the code...'
-                checkout scm
+                echo "Username: ${params.USERNAME}"
+                echo "Environment: ${params.ENV}"
+                echo "Run Tests: ${params.RUN_TESTS}"
             }
         }
 
-        stage('Build') {
-            steps {
-                echo 'Building the application...'
-                // Example: sh 'make build' or compile step
+        stage('Conditional Test') {
+            when {
+                expression { return params.RUN_TESTS == true }
             }
-        }
-
-        stage('Test') {
             steps {
-                echo 'Running tests...'
-                // Example: sh 'pytest tests/' or 'npm test'
+                echo "Running tests for ${params.ENV}..."
+                // You can add actual test commands here
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Deploying application...'
-                // Example: sh './deploy.sh'
+                echo "Deploying to ${params.ENV} as ${params.USERNAME}..."
+                // Add your deploy script here
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline succeeded!'
+            echo 'Pipeline completed successfully.'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo 'Pipeline failed.'
         }
     }
 }
